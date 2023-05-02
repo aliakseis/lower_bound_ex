@@ -7,6 +7,8 @@
  
 #include <time.h>
  
+#include "binary_search.hpp"
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -222,7 +224,8 @@ void DoTest(int size, int iterations)
  
     for (int i = 0; i <= size; ++i)
         arr[i] = i;
- 
+
+    // lower_bound_ex
     clock_t start = clock();
  
     for (int k = 0; k < iterations; ++k)
@@ -242,6 +245,27 @@ void DoTest(int size, int iterations)
         (double)(clock() - start) / CLOCKS_PER_SEC  <<
         " seconds" << endl;
  
+    // branchless_lower_bound
+    start = clock();
+
+    for (int k = 0; k < iterations; ++k)
+        for (int i = 0; i < size; ++i)
+        {
+            int j = (HashKey(i) % size);
+            int* p = branchless_lower_bound(arr, arr + size - 1, j);
+            if (j != *p)
+            {
+                cerr << "Erroneous branchless_lower_bound test result: " << *p
+                    << " instead of " << j << endl;
+                exit(1);
+            }
+        }
+
+    cout << "  branchless_lower_bound time: " <<
+        (double)(clock() - start) / CLOCKS_PER_SEC <<
+        " seconds" << endl;
+
+    // std::lower_bound
     start = clock();
  
     for (int k = 0; k < iterations; ++k)
@@ -267,8 +291,8 @@ void DoTest(int size, int iterations)
  
 int main(int argc, char* argv[])
 {
-   DoTest(128 * 1024, 50);
-   DoTest(95369, 50);
+   DoTest(128 * 1024, 100);
+   DoTest(95369, 100);
  
    return 0;
 }
